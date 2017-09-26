@@ -1,0 +1,8 @@
+acme_tag: "latest"
+acme_image_url: "docker.io/appuio/openshift-acme"
+acme_image: "{{ acme_image_url }}:{{ acme_tag }}"
+
+acme_url: https://acme-staging.api.letsencrypt.org/directory
+acme_selfservicename: acme-controller
+acme_selfservicenamespace:  "{{ acme_selfservicename }}"
+acme_loglevel: "8"

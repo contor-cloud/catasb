@@ -1,0 +1,40 @@
+---
+  - name: Docker pull {{ acme_image }}
+    docker_image:
+      name: "{{ acme_image }}"
+    register: docker_pull_acme_controller
+
+  - name: Docker tag acme-controller
+    shell: docker tag {{ acme_image }} {{ acme_tag }}
+
+  - name: check if the acme-controller project exists
+    shell: "{{ oc_cmd }} get project --no-headers=true | awk '{ print $1 }' | grep -E '^{{ acme_selfservicenamespace }}( |$)' | cat"
+    register: acme_project
+
+  - name: Create a new project for the acme-controller
+    shell: "{{ oc_cmd }} new-project {{ acme_selfservicenamespace }}"
+    register: new_acme_controller_project
+    when: acme_project.stdout.find( "{{ acme_selfservicenamespace }}" ) == -1
+
+  - name: check if the apiserver deployment exists
+    shell: "{{ oc_cmd }} get deployment -n acme-controller --no-headers=true | awk '{ print $1}' | grep -E '^acme-controller( |$)' | cat"
+    register: acme_deployment
+
+  - name: Creating acme-cluster-controller.templ.yaml
+    template:
+      src: acme_controller.templ.yaml.j2
+      dest: /tmp/acme-cluster-controller.templ.yaml
+    register: copy_acme_controller_tmp
+    when: acme_deployment.stdout.find( "acme-controller" ) == -1
+
+  - name: Install ACME Controller through OC Template
+    shell: "{{ oc_cmd }} process -f /tmp/acme-cluster-controller.templ.yaml | {{ oc_cmd }} create -f -"
+    when: new_acme_controller_project|succeeded and acme_deployment.stdout.find( "acme-controller" ) == -1
+
+  - name: Waiting 10 minutes for ACME controller pod to come up
+    action:
+      shell "{{ oc_cmd }}" get pods -n acme-controller | grep -qiEm1 "acme-controller.*?running"
+    register: wait_for_acme_controller_running
+    until: wait_for_acme_controller_running.rc == 0
+    retries: 60
+    delay: 10

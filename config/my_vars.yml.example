@@ -17,6 +17,11 @@ dockerhub_org: ansibleplaybookbundle
 # openshift_hostname: 172.17.0.1
 # openshift_routing_suffix: 172.17.0.1.nip.io
 
+# OpenShift ACME Controller
+# Requires openshift_hostname and openshift_routing_suffix
+# be set and resolveable. To use it, uncomment the following line:
+# acme: true
+
 # Default to the "anyuid" scc for pod deployments.
 # scc_anyuid: true
 

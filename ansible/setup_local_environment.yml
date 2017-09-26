@@ -3,6 +3,7 @@
   vars:
     demo: False
     broker_ci: False
+    acme: False
   vars_prompt:
     - name: dockerhub_user_name
       prompt: "Enter your dockerhub username"
@@ -17,6 +18,7 @@
     - "{{ cluster }}_setup"
     - { role: ansible_service_broker_setup, when: not broker_ci }
     - { role: local_demo_prep, when: demo }
+    - { role: acme_controller_setup, when: acme }
   post_tasks:
     - set_fact:
         msg: |
