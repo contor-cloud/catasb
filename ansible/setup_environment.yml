@@ -20,6 +20,8 @@
     - name: Setting fact of security group id
       set_fact:
         my_security_group_id: "{{ hostvars.localhost.my_ec2_facts.instances[0].groups[0].id }}"
+  vars:
+    acme: False
   vars_prompt:
     - name: dockerhub_user_name
       prompt: "Enter your dockerhub username: "
@@ -40,6 +42,7 @@
     - env_hacks
     - ansible_service_broker_setup
     - demo_prep
+    - { role: acme_controller_setup, when: acme }
   post_tasks:
     - set_fact:
         msg: |
